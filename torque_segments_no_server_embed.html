@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Torque Lesson – No Server (Embed Mode)</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 0; padding: 24px; line-height: 1.45; background:#fff; }
+    .container { max-width: 880px; margin: 0 auto; }
+    h1 { font-size: 1.5rem; margin: 0 0 8px 0; }
+    p  { margin: 0 0 12px 0; }
+    #frameWrap { width: 100%; aspect-ratio: 16/9; background:#000; border-radius: 12px; overflow: hidden; }
+    iframe { width: 100%; height: 100%; border: 0; display:block; }
+    .controls { display:flex; gap:8px; margin:12px 0 20px; flex-wrap:wrap; }
+    button { padding: 10px 14px; border-radius: 999px; border: 1px solid #ccc; background: white; cursor: pointer; }
+    button:hover { background:#f6f6f6; }
+    .status { font-size:0.95rem; color:#333; }
+    .small { color:#555; font-size:0.9rem; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Torque Lesson – No Server Needed</h1>
+    <p class="small">Click a button to play that segment. No autoplay and no inter‑clip gap. Works via <code>file://</code>.</p>
+
+    <div id="frameWrap">
+      <iframe id="player" src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+    </div>
+
+    <div class="controls">
+      <button id="clip1Btn">▶ Play Clip 1</button>
+      <button id="clip2Btn">▶ Play Clip 2</button>
+      <button id="stopBtn">⏹ Stop</button>
+      <button id="muteHintBtn" title="YouTube's embed player handles volume inside the frame.">ℹ️ Volume hint</button>
+    </div>
+
+    <p class="status" id="status">Status: Ready. Choose a clip to play.</p>
+  </div>
+
+  <script>
+    // Easy-to-edit configuration
+    const CONFIG = {
+      clip1: { id: "tsY6ae5Ryp4", start: 0,   end: 35,  label: "Clip 1" },
+      clip2: { id: "MBXpB4bDp_o", start: 18,  end: 230, label: "Clip 2" }
+    };
+
+    const buildSrc = (id, start, end) =>
+      `https://www.youtube.com/embed/${id}?start=${Math.floor(start)}&end=${Math.floor(end)}&autoplay=1&rel=0&modestbranding=1&playsinline=1`;
+
+    const iframe = document.getElementById("player");
+    const statusEl = document.getElementById("status");
+
+    document.getElementById("clip1Btn").addEventListener("click", () => {
+      iframe.src = buildSrc(CONFIG.clip1.id, CONFIG.clip1.start, CONFIG.clip1.end);
+      statusEl.textContent = `${CONFIG.clip1.label}: playing…`;
+    });
+
+    document.getElementById("clip2Btn").addEventListener("click", () => {
+      iframe.src = buildSrc(CONFIG.clip2.id, CONFIG.clip2.start, CONFIG.clip2.end);
+      statusEl.textContent = `${CONFIG.clip2.label}: playing…`;
+    });
+
+    document.getElementById("stopBtn").addEventListener("click", () => {
+      // Stop by clearing the src; this also prevents any replay
+      iframe.src = "";
+      statusEl.textContent = "Stopped.";
+    });
+
+    document.getElementById("muteHintBtn").addEventListener("click", () => {
+      alert("Use the volume/mute controls within the YouTube player (bottom left of the video frame).");
+    });
+  </script>
+</body>
+</html>

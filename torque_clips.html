@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Torque Lesson</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 0; padding: 24px; line-height: 1.45; background:#fff; }
+    .container { max-width: 880px; margin: 0 auto; }
+    h1 { font-size: 1.5rem; margin: 0 0 8px 0; }
+    p  { margin: 0 0 12px 0; }
+    #player { width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 12px; overflow: hidden; }
+    .controls { display: flex; gap: 8px; margin: 12px 0 20px; flex-wrap: wrap; }
+    button { padding: 10px 14px; border-radius: 999px; border: 1px solid #ccc; background: white; cursor: pointer; }
+    button:hover { background: #f6f6f6; }
+    .status { font-size: 0.95rem; color: #333; }
+    .small { color: #555; font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Torque Lesson</h1>
+    <p class="small">Click to play clip (v1).</p>
+
+    <div id="player"></div>
+
+    <div class="controls">
+      <button id="clip1Btn" disabled>▶ Play Clip 1</button>
+      <button id="clip2Btn" disabled>▶ Play Clip 2</button>
+      <button id="stopBtn"  disabled>⏹ Stop</button>
+      <button id="muteBtn"  disabled>🔇 Mute</button>
+      <button id="unmuteBtn" disabled>🔊 Unmute</button>
+    </div>
+
+    <p class="status" id="status">Status: Loading API…</p>
+  </div>
+
+  <script src="https://www.youtube.com/iframe_api"></script>
+  <script>
+    // --- CONFIG ---
+    const CONFIG = {
+      segments: [
+        { videoId: "tsY6ae5Ryp4", start: 0.0,   end: 36.1,  label: "Clip 1" },
+        { videoId: "MBXpB4bDp_o", start: 17.1,  end: 227.0, label: "Clip 2" }
+      ]
+    };
+
+    // --- CONSTANTS ---
+    const END_EPS   = 0.03;
+    const START_EPS = 0.05;
+
+    // --- STATE ---
+    let player;
+    let currentIndex = -1;
+    let state = "IDLE"; // IDLE | PLAYING | FINISHED | STOPPED
+    let awaitingStartSeek = false;
+    let allowNudges = false;
+    let pollId = null;
+
+    const statusEl = document.getElementById('status');
+    const setStatus = (m) => statusEl.textContent = "Status: " + m;
+
+    function onYouTubeIframeAPIReady() {
+      player = new YT.Player('player', {
+        videoId: CONFIG.segments[0].videoId,
+        host: "https://www.youtube-nocookie.com",
+        playerVars: { modestbranding:1, rel:0, controls:1, playsinline:1, origin: (location.origin || undefined) },
+        events: { onReady, onStateChange, onError }
+      });
+    }
+
+    function onReady() {
+      setStatus("Ready. Choose a clip to play.");
+      ["clip1Btn","clip2Btn","stopBtn","muteBtn","unmuteBtn"].forEach(id => document.getElementById(id).disabled = false);
+      document.getElementById('clip1Btn').addEventListener('click', () => playClip(0));
+      document.getElementById('clip2Btn').addEventListener('click', () => playClip(1));
+      document.getElementById('stopBtn').addEventListener('click', stopPlayback);
+      document.getElementById('muteBtn').addEventListener('click', () => player.mute());
+      document.getElementById('unmuteBtn').addEventListener('click', () => player.unMute());
+    }
+
+    function stopPlayback() {
+      clearInterval(pollId);
+      try { player.stopVideo(); } catch(e){}
+      state = "STOPPED";
+      allowNudges = false;
+      setStatus("Stopped.");
+    }
+
+    function playClip(i) {
+      clearInterval(pollId);
+      currentIndex = i;
+      const seg = CONFIG.segments[i];
+      state = "PLAYING";
+      allowNudges = true;      // ONLY true during an intentional play
+      awaitingStartSeek = true;
+
+      setStatus(`${seg.label}: cueing (${seg.start.toFixed(2)}s → ${seg.end.toFixed(2)}s)`);
+      player.cueVideoById({ videoId: seg.videoId, startSeconds: seg.start, endSeconds: seg.end, suggestedQuality: "large" });
+
+      // Backup end detection (in case ENDED event misses)
+      pollId = setInterval(() => {
+        if (state !== "PLAYING") return;
+        const t = player?.getCurrentTime?.() ?? 0;
+        if (t >= seg.end - END_EPS) {
+          finishClip();
+        }
+      }, 120);
+    }
+
+    function finishClip() {
+      clearInterval(pollId);
+      try { player.stopVideo(); } catch(e){}
+      const seg = CONFIG.segments[currentIndex];
+      setStatus(`${seg.label}: finished.`);
+      state = "FINISHED";
+      allowNudges = false;     // Prevent any further auto-plays
+    }
+
+    function forcePlay() {
+      if (state === "PLAYING" && allowNudges) {
+        try { player.playVideo(); } catch(e){}
+      }
+    }
+
+    function onStateChange(e) {
+      const st = e.data;
+      if (currentIndex < 0) return; // no clip selected
+      const seg = CONFIG.segments[currentIndex];
+
+      if (st === YT.PlayerState.CUED) {
+        if (state !== "PLAYING") return;  // ignore CUED if not actively playing
+        // precise start then play
+        const now = player.getCurrentTime();
+        if (Math.abs(now - seg.start) > START_EPS) player.seekTo(seg.start, true);
+        forcePlay(); // single nudge after user click
+      }
+      else if (st === YT.PlayerState.PLAYING) {
+        if (state !== "PLAYING") { player.pauseVideo(); return; } // safety
+        if (awaitingStartSeek) {
+          const now = player.getCurrentTime();
+          if (Math.abs(now - seg.start) > START_EPS) player.seekTo(seg.start, true);
+          awaitingStartSeek = false;
+        }
+        setStatus(`${seg.label}: playing…`);
+      }
+      else if (st === YT.PlayerState.BUFFERING) {
+        if (state === "PLAYING") setTimeout(forcePlay, 80);
+      }
+      else if (st === YT.PlayerState.ENDED) {
+        if (state === "PLAYING") finishClip();
+      }
+      else if (st === YT.PlayerState.PAUSED) {
+        // No-op
+      }
+    }
+
+    function onError(e) {
+      const code = e?.data ?? 'unknown';
+      setStatus("Player error: " + code);
+      // On error, do not attempt to replay
+      allowNudges = false;
+    }
+  </script>
+</body>
+</html>
