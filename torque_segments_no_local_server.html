@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Torque Lesson – No Server (Embed Mode)</title>
+  <title>Torque Lesson</title>
   <style>
     body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 0; padding: 24px; line-height: 1.45; background:#fff; }
     .container { max-width: 880px; margin: 0 auto; }
@@ -20,8 +20,8 @@
 </head>
 <body>
   <div class="container">
-    <h1>Torque Lesson – No Server Needed</h1>
-    <p class="small">Click a button to play that segment. No autoplay and no inter‑clip gap. Works via <code>file://</code>.</p>
+    <h1>Torque Lesson</h1>
+    <p class="small">Click button to play segment.</p>
 
     <div id="frameWrap">
       <iframe id="player" src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
@@ -31,7 +31,7 @@
       <button id="clip1Btn">▶ Play Clip 1</button>
       <button id="clip2Btn">▶ Play Clip 2</button>
       <button id="stopBtn">⏹ Stop</button>
-      <button id="muteHintBtn" title="YouTube's embed player handles volume inside the frame.">ℹ️ Volume hint</button>
+      <button id="muteHintBtn" title="YouTube player handles volume and muting, inside the frame.">ℹ️ Volume hint</button>
     </div>
 
     <p class="status" id="status">Status: Ready. Choose a clip to play.</p>
@@ -40,8 +40,8 @@
   <script>
     // Easy-to-edit configuration
     const CONFIG = {
-      clip1: { id: "tsY6ae5Ryp4", start: 0,   end: 35,  label: "Clip 1" },
-      clip2: { id: "MBXpB4bDp_o", start: 18,  end: 230, label: "Clip 2" }
+      clip1: { id: "tsY6ae5Ryp4", start: 0,   end: 36.1,  label: "Clip 1" },
+      clip2: { id: "MBXpB4bDp_o", start: 17.1,  end: 227, label: "Clip 2" }
     };
 
     const buildSrc = (id, start, end) =>
