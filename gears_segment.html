@@ -38,27 +38,27 @@
     function buildEmbedSrc(id, start, end) {
       const s = Math.floor(start);
       const e = Math.floor(end);
-      // Use youtube-nocookie to minimize cross-site cookie issues in Safari
-      return `https://www.youtube-nocookie.com/embed/${id}?start=${s}&end=${e}&autoplay=1&rel=0&modestbranding=1&playsinline=1`;
+      // Use standard YouTube host to match behavior you observed (audio starts immediately on click)
+      return `https://www.youtube.com/embed/${id}?start=${s}&end=${e}&autoplay=1&rel=0&modestbranding=1&playsinline=1`;
     }
 
     function buildWatchUrl(id, start) {
       const s = Math.floor(start);
-      return `https://www.youtube.com/watch?v=${id}&t=${s}s`;
+      return `https://www.youtube.com/watch?v=${id}&t=${s}s&autoplay=1`;
     }
 
     const iframe = document.getElementById("player");
     const statusEl = document.getElementById("status");
 
     document.getElementById("playBtn").addEventListener("click", () => {
-      // If running from file://, avoid iframe to prevent Safari Error 153
       if (location.protocol === "file:") {
+        // Local file: open the watch page in a new tab to avoid Safari Error 153
         const url = buildWatchUrl(CLIP.id, CLIP.start);
         window.open(url, "_blank", "noopener");
         statusEl.textContent = `${CLIP.label}: opened in new tab.`;
         return;
       }
-      // Otherwise, we have an HTTP(S) origin — safe to use the embed (with end parameter)
+      // Hosted over http(s): load embed that auto-plays with sound
       iframe.src = buildEmbedSrc(CLIP.id, CLIP.start, CLIP.end);
       statusEl.textContent = `${CLIP.label}: playing…`;
     });

@@ -12,4 +12,4 @@
 > [http://localhost:8000/torque_clips_needs_local_server.html](http://localhost:8000/torque_clips_needs_local_server.html)
 
 ### Gears Lesson
-1. [gears_segment_no_local_server.html](https://github.com/roubaix-rider/robotics/blob/main/gears_segment_no_local_server.html) is the file that will be used in the classroom setting.  The file will be downloaded from a browser using the following URL: [https://htmlpreview.github.io/?https://raw.githubusercontent.com/roubaix-rider/robotics/refs/heads/main/gears_segment_no_local_server.html](https://htmlpreview.github.io/?https://raw.githubusercontent.com/roubaix-rider/robotics/refs/heads/main/gears_segment_no_local_server.html).<br><br>
+1. [gears_segment.html](https://github.com/roubaix-rider/robotics/blob/main/gears_segment.html) is the file that will be used in the classroom setting.  The file will be downloaded from a browser using the following URL: [https://htmlpreview.github.io/?https://raw.githubusercontent.com/roubaix-rider/robotics/refs/heads/main/gears_segment.html](https://htmlpreview.github.io/?https://raw.githubusercontent.com/roubaix-rider/robotics/refs/heads/main/gears_segment.html).<br><br>
