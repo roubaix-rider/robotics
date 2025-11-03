@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Gears Lesson</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 0; padding: 24px; line-height: 1.45; background:#fff; }
+    .container { max-width: 880px; margin: 0 auto; }
+    h1 { font-size: 1.5rem; margin: 0 0 8px 0; }
+    #frameWrap { width: 100%; aspect-ratio: 16/9; background:#000; border-radius: 12px; overflow: hidden; }
+    iframe { width: 100%; height: 100%; border: 0; display:block; }
+    .controls { display:flex; gap:8px; margin:12px 0 20px; flex-wrap:wrap; }
+    button { padding: 10px 14px; border-radius: 999px; border: 1px solid #ccc; background: white; cursor: pointer; }
+    button:hover { background:#f6f6f6; }
+    .status { font-size:0.95rem; color:#333; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Gears Lesson</h1>
+
+    <div id="frameWrap">
+      <iframe id="player" src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+    </div>
+
+    <div class="controls">
+      <button id="playBtn">▶ Play Clip</button>
+    </div>
+
+    <p class="status" id="status">Status: Ready.</p>
+  </div>
+
+  <script>
+    // One clip configuration
+    const CLIP = { id: "txQs3x-UN34", start: 32, end: 330, label: "Clip" };
+
+    function buildEmbedSrc(id, start, end) {
+      const s = Math.floor(start);
+      const e = Math.floor(end);
+      // Use youtube-nocookie to minimize cross-site cookie issues in Safari
+      return `https://www.youtube-nocookie.com/embed/${id}?start=${s}&end=${e}&autoplay=1&rel=0&modestbranding=1&playsinline=1`;
+    }
+
+    function buildWatchUrl(id, start) {
+      const s = Math.floor(start);
+      return `https://www.youtube.com/watch?v=${id}&t=${s}s`;
+    }
+
+    const iframe = document.getElementById("player");
+    const statusEl = document.getElementById("status");
+
+    document.getElementById("playBtn").addEventListener("click", () => {
+      // If running from file://, avoid iframe to prevent Safari Error 153
+      if (location.protocol === "file:") {
+        const url = buildWatchUrl(CLIP.id, CLIP.start);
+        window.open(url, "_blank", "noopener");
+        statusEl.textContent = `${CLIP.label}: opened in new tab.`;
+        return;
+      }
+      // Otherwise, we have an HTTP(S) origin — safe to use the embed (with end parameter)
+      iframe.src = buildEmbedSrc(CLIP.id, CLIP.start, CLIP.end);
+      statusEl.textContent = `${CLIP.label}: playing…`;
+    });
+  </script>
+</body>
+</html>
